@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KOBE Weather Dashboard</title>
+    <title>兵庫県南部（神戸）気象ダッシュボード</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            background: radial-gradient(circle at center, #2c5364, #203a43, #0f2027);
+            font-family: 'Helvetica Neue', Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", sans-serif;
+            background: radial-gradient(circle at center, #2c5364, #203a43, #0f2027) fixed;
             margin: 0;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             color: #ffffff;
+            padding: 40px 0;
+            overflow-y: auto;
         }
 
         .header-container {
@@ -23,25 +24,43 @@
             justify-content: space-between;
             align-items: flex-end;
             width: 625px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-            padding-bottom: 8px;
+            padding-bottom: 10px;
         }
 
-        .main-title { font-size: 1.1rem; font-weight: bold; margin: 0; }
+        .main-title { font-size: 1.2rem; font-weight: bold; margin: 0; letter-spacing: 0.05em; }
         .current-date { font-size: 1.1rem; font-weight: 300; color: rgba(255, 255, 255, 0.8); }
+
+        .section-label {
+            width: 625px;
+            font-size: 0.85rem;
+            color: #a0c4ff;
+            margin-bottom: 15px;
+            letter-spacing: 0.1em;
+            font-weight: bold;
+        }
 
         .dashboard {
             display: grid;
             grid-template-columns: 300px 300px;
             grid-template-rows: 140px 140px;
             gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .forecast-container {
+            display: grid;
+            grid-template-columns: 300px 300px;
+            gap: 25px;
+            width: 625px;
+            margin-bottom: 40px;
         }
 
         .panel {
             position: relative;
             width: 100%;
-            height: 100%;
+            height: 140px;
             background: rgba(255, 255, 255, 0.07);
             border-radius: 12px;
             display: flex;
@@ -50,7 +69,10 @@
             align-items: center;
             border: 1px solid rgba(255, 255, 255, 0.1);
             overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
+
+        .forecast-panel { height: 160px; }
 
         .chart-overlay {
             position: absolute;
@@ -59,34 +81,44 @@
         }
 
         .data-group { position: relative; z-index: 2; text-align: center; }
-        .label { font-size: 0.7rem; color: #a0c4ff; font-weight: bold; margin-bottom: 5px; }
+        .label { font-size: 0.75rem; color: #a0c4ff; font-weight: bold; margin-bottom: 8px; }
         .flex-row { display: flex; align-items: center; justify-content: center; }
-        .value { font-size: 3rem; font-weight: 200; line-height: 1.1; }
-        .sub-value { font-size: 2rem; font-weight: 200; line-height: 1.1; }
-        .unit { font-size: 0.85rem; margin-left: 5px; }
+        .value { font-size: 3.2rem; font-weight: 500; line-height: 1.1; }
+        .sub-value { font-size: 2.2rem; font-weight: 500; line-height: 1.1; }
+        .unit { font-size: 0.9rem; margin-left: 5px; font-weight: bold; }
+
+        .forecast-text { font-size: 1.6rem; font-weight: bold; color: #fff; margin-top: 2px; }
+        .temp-range { font-size: 0.95rem; margin-top: 5px; color: #cfd8dc; }
+        .prob-range { font-size: 0.85rem; margin-top: 8px; color: #81d4fa; font-weight: bold; }
+        
+        .high { color: #ffab91; font-weight: bold; }
+        .low { color: #81d4fa; font-weight: bold; }
 
         .temp { color: #ffab91; }
         .rain { color: #81d4fa; }
         .wind { color: #a5d6a7; }
 
         #update-msg {
-            position: absolute; bottom: 20px; font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 40px;
         }
     </style>
 </head>
 <body>
 
 <div class="header-container">
-    <h1 class="main-title">アメダス 兵庫県神戸観測データ</h1>
-    <div class="current-date" id="today-date">----/--/--</div>
+    <h1 class="main-title">兵庫県南部 (神戸) の気象データ</h1>
+    <div class="current-date" id="today-date">----年--月--日</div>
 </div>
+
+<div class="section-label">現在の観測状況</div>
 
 <div class="dashboard">
     <div class="panel">
         <canvas id="tempChart" class="chart-overlay"></canvas>
         <div class="data-group">
-            <div class="label">TEMPERATURE</div>
+            <div class="label">気温</div>
             <div class="flex-row temp">
                 <span style="font-size: 1.8rem; margin-right:8px;">🌡️</span>
                 <div class="value"><span id="temp-val">--</span><span class="unit">℃</span></div>
@@ -96,17 +128,169 @@
 
     <div class="panel">
         <div class="data-group">
-            <div class="label">LAST UPDATE</div>
-            <div class="value" id="time-val" style="font-size: 3.5rem;">--:--</div>
+            <div class="label">最終更新時刻</div>
+            <div class="value" id="time-val" style="font-size: 3.8rem; font-weight: 500;">--:--</div>
         </div>
     </div>
 
     <div class="panel">
         <canvas id="rainChart" class="chart-overlay"></canvas>
         <div class="data-group">
-            <div class="label">PRECIPITATION</div>
+            <div class="label">降水量</div>
             <div class="flex-row rain">
                 <span style="font-size: 1.2rem; margin-right: 6px;">💧</span>
+                <div class="sub-value"><span id="rain-val">--</span><span class="unit">mm</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <canvas id="windChart" class="chart-overlay"></canvas>
+        <div class="data-group">
+            <div class="label">風速</div>
+            <div class="flex-row wind">
+                <div class="value"><span id="wind-val">--</span><span class="unit">m/s</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section-label">兵庫県南部の天気予報</div>
+
+<div class="forecast-container">
+    <div class="panel forecast-panel">
+        <div class="data-group">
+            <div class="label">今日の天気</div>
+            <div id="today-weather" class="forecast-text">--</div>
+            <div class="temp-range">
+                最高 <span class="high" id="today-high">--</span> / 
+                最低 <span class="low" id="today-low">--</span> <span class="unit">℃</span>
+            </div>
+            <div class="prob-range">
+                ☔️ 降水確率: 朝 <span id="today-prob-am">--</span>% / 昼 <span id="today-prob-pm">--</span>%
+            </div>
+        </div>
+    </div>
+    <div class="panel forecast-panel">
+        <div class="data-group">
+            <div class="label">明日の天気</div>
+            <div id="tomorrow-weather" class="forecast-text">--</div>
+            <div class="temp-range">
+                最高 <span class="high" id="tomorrow-high">--</span> / 
+                最低 <span class="low" id="tomorrow-low">--</span> <span class="unit">℃</span>
+            </div>
+            <div class="prob-range">
+                ☔️ 降水確率: 朝 <span id="tomorrow-prob-am">--</span>% / 昼 <span id="tomorrow-prob-pm">--</span>%
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="update-msg">最新データ取得中...</div>
+
+<script>
+    let charts = {};
+
+    function getWeatherText(code) {
+        const weatherMap = {
+            0: "☀️ 快晴", 1: "🌤 晴れ", 2: "⛅️ 時々曇り", 3: "☁️ 曇り",
+            45: "🌫 霧", 48: "🌫 霧氷", 51: "🚿 霧雨", 53: "🚿 霧雨", 55: "🚿 霧雨",
+            61: "☔️ 小雨", 63: "☔️ 雨", 65: "🌊 大雨", 71: "❄️ 小雪", 73: "❄️ 雪", 75: "☃️ 大雪",
+            80: "🌦 にわか雨", 81: "🌦 にわか雨", 82: "⛈ 激しい雨", 95: "⚡️ 雷雨"
+        };
+        return weatherMap[code] || "不明";
+    }
+
+    function initCharts(tempHistory, rainHistory, windHistory) {
+        const configs = [
+            { id: 'tempChart', color: '#ffab91', data: tempHistory },
+            { id: 'rainChart', color: '#81d4fa', data: rainHistory },
+            { id: 'windChart', color: '#a5d6a7', data: windHistory }
+        ];
+        configs.forEach(config => {
+            const ctx = document.getElementById(config.id);
+            charts[config.id] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array(config.data.length).fill(''),
+                    datasets: [{
+                        data: config.data,
+                        borderColor: config.color,
+                        backgroundColor: config.color + '22',
+                        fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { display: false }, y: { display: false } }
+                }
+            });
+        });
+    }
+
+    async function updateData() {
+        const msgEl = document.getElementById('update-msg');
+        const lat = 34.69;
+        const lon = 135.19;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,precipitation,wind_speed_10m,weather_code&hourly=temperature_2m,precipitation,wind_speed_10m,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Asia%2FTokyo`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            const current = data.current;
+            document.getElementById('temp-val').innerText = current.temperature_2m.toFixed(1);
+            document.getElementById('rain-val').innerText = current.precipitation.toFixed(1);
+            document.getElementById('wind-val').innerText = (current.wind_speed_10m / 3.6).toFixed(1);
+
+            const now = new Date();
+            document.getElementById('today-date').innerText = now.getFullYear() + "年" + (now.getMonth() + 1) + "月" + now.getDate() + "日";
+            document.getElementById('time-val').innerText = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+
+            const daily = data.daily;
+            document.getElementById('today-weather').innerText = getWeatherText(daily.weather_code[0]);
+            document.getElementById('today-high').innerText = daily.temperature_2m_max[0].toFixed(1);
+            document.getElementById('today-low').innerText = daily.temperature_2m_min[0].toFixed(1);
+            document.getElementById('tomorrow-weather').innerText = getWeatherText(daily.weather_code[1]);
+            document.getElementById('tomorrow-high').innerText = daily.temperature_2m_max[1].toFixed(1);
+            document.getElementById('tomorrow-low').innerText = daily.temperature_2m_min[1].toFixed(1);
+
+            const probH = data.hourly.precipitation_probability;
+            document.getElementById('today-prob-am').innerText = Math.max(...probH.slice(6, 12));
+            document.getElementById('today-prob-pm').innerText = Math.max(...probH.slice(12, 18));
+            document.getElementById('tomorrow-prob-am').innerText = Math.max(...probH.slice(30, 36));
+            document.getElementById('tomorrow-prob-pm').innerText = Math.max(...probH.slice(36, 42));
+
+            const historyLimit = 24;
+            const tempH = data.hourly.temperature_2m.slice(0, historyLimit);
+            const rainH = data.hourly.precipitation.slice(0, historyLimit);
+            const windH = data.hourly.wind_speed_10m.slice(0, historyLimit).map(v => v / 3.6);
+
+            if (!charts.tempChart) {
+                initCharts(tempH, rainH, windH);
+            } else {
+                charts.tempChart.data.datasets[0].data = tempH;
+                charts.rainChart.data.datasets[0].data = rainH;
+                charts.windChart.data.datasets[0].data = windH;
+                Object.values(charts).forEach(c => c.update());
+            }
+
+            msgEl.innerText = "データ更新完了 • 1分ごとに自動同期";
+        } catch (e) {
+            msgEl.innerText = "通信エラー発生 • 再試行中";
+            console.error(e);
+        }
+    }
+
+    window.onload = () => {
+        updateData();
+        // 1分ごとに更新 (60000ms)
+        setInterval(updateData, 60000);
+    };
+</script>
+</body>
+</html>                <span style="font-size: 1.2rem; margin-right: 6px;">💧</span>
                 <div class="sub-value"><span id="rain-val">--</span><span class="unit">mm</span></div>
             </div>
         </div>

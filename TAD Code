@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>兵庫県宝塚市 気象ダッシュボード</title>
+    <title>宝塚観測 ＆ 日本全国47都道府県予報</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         body {
@@ -39,7 +39,6 @@
             gap: 12px;
             align-items: center;
         }
-        .update-label { font-size: 0.9rem; opacity: 0.7; margin-right: -5px; }
 
         .section-label {
             width: 625px;
@@ -51,9 +50,18 @@
             text-shadow: 0 0 10px rgba(160, 196, 255, 0.5);
             border-left: 4px solid #a0c4ff;
             padding-left: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        /* ダッシュボードのレイアウト調整 */
+        #city-name {
+            color: #fff176;
+            text-shadow: 0 0 10px rgba(255, 241, 118, 0.5);
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
         .dashboard {
             display: grid;
             grid-template-columns: 300px 300px;
@@ -61,7 +69,6 @@
             margin-bottom: 25px;
         }
 
-        /* 気圧パネル専用のコンテナ（中央配置） */
         .pressure-container {
             width: 625px;
             height: 150px;
@@ -74,6 +81,7 @@
             gap: 25px;
             width: 625px;
             margin-bottom: 40px;
+            transition: opacity 0.5s ease;
         }
 
         .panel {
@@ -101,18 +109,9 @@
         .label { font-size: 0.8rem; color: #a0c4ff; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; text-shadow: 0 0 4px rgba(160, 196, 255, 0.3); }
         .flex-row { display: flex; align-items: center; justify-content: center; }
         
-        .value { 
-            font-size: 4rem; font-weight: 600; line-height: 1; letter-spacing: -0.02em;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-        }
-        .current-weather-text { 
-            font-size: 3.2rem; font-weight: 600; line-height: 1; color: #fff;
-            text-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
-        }
-        .sub-value { 
-            font-size: 2.5rem; font-weight: 600; line-height: 1;
-            text-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
-        }
+        .value { font-size: 4rem; font-weight: 600; line-height: 1; letter-spacing: -0.02em; text-shadow: 0 0 10px rgba(255, 255, 255, 0.2); }
+        .current-weather-text { font-size: 3.2rem; font-weight: 600; line-height: 1; color: #fff; text-shadow: 0 0 12px rgba(255, 255, 255, 0.3); }
+        .sub-value { font-size: 2.5rem; font-weight: 600; line-height: 1; text-shadow: 0 0 8px rgba(255, 255, 255, 0.15); }
         .unit { font-size: 1rem; margin-left: 6px; font-weight: bold; vertical-align: bottom; }
 
         .forecast-text { font-size: 1.8rem; font-weight: bold; color: #fff; margin-top: 4px; text-shadow: 0 0 8px rgba(255, 255, 255, 0.2); }
@@ -127,13 +126,12 @@
 <div class="header-container">
     <h1 class="main-title">📍 兵庫県 宝塚市 気象実況</h1>
     <div class="current-info">
-        <span class="update-label">最終更新:</span>
         <span id="today-date">----年--月--日</span>
         <span id="time-val">--:--</span>
     </div>
 </div>
 
-<div class="section-label">現在の観測状況（宝塚市付近）</div>
+<div class="section-label">現在の観測状況（宝塚市固定）</div>
 
 <div class="dashboard">
     <div class="panel">
@@ -146,42 +144,29 @@
             </div>
         </div>
     </div>
-
     <div class="panel" style="background: rgba(255, 255, 255, 0.1);">
         <div class="data-group">
             <div class="label">現在の天気</div>
             <div id="current-weather" class="current-weather-text">--</div>
         </div>
     </div>
-
     <div class="panel">
         <canvas id="rainSnowChart" class="chart-overlay"></canvas>
         <div class="data-group">
             <div class="label">降水 / 降雪</div>
             <div style="display: flex; flex-direction: column; gap: 8px;">
-                <div class="flex-row" style="color: #81d4fa; text-shadow: 0 0 10px rgba(129, 212, 250, 0.3);">
-                    <span style="font-size: 1.5rem; margin-right: 10px;">☂️</span>
-                    <div class="sub-value"><span id="rain-val">--</span><span class="unit">mm</span></div>
-                </div>
-                <div class="flex-row" style="color: #ffffff;">
-                    <span style="font-size: 1.5rem; margin-right: 10px;">🌨️</span>
-                    <div class="sub-value"><span id="snow-val">--</span><span class="unit">cm</span></div>
-                </div>
+                <div class="flex-row" style="color: #81d4fa; text-shadow: 0 0 10px rgba(129, 212, 250, 0.3);"><span style="font-size: 1.5rem; margin-right: 10px;">☂️</span><div class="sub-value"><span id="rain-val">--</span><span class="unit">mm</span></div></div>
+                <div class="flex-row" style="color: #ffffff;"><span style="font-size: 1.5rem; margin-right: 10px;">🌨️</span><div class="sub-value"><span id="snow-val">--</span><span class="unit">cm</span></div></div>
             </div>
         </div>
     </div>
-
     <div class="panel">
         <canvas id="windChart" class="chart-overlay"></canvas>
         <div class="data-group">
             <div class="label">風速 / 風向</div>
             <div style="display: flex; flex-direction: column; gap: 8px;">
-                <div class="flex-row" style="color: #a5d6a7; text-shadow: 0 0 10px rgba(165, 214, 167, 0.3);">
-                    <div class="sub-value"><span id="wind-val">--</span><span class="unit">m/s</span></div>
-                </div>
-                <div class="flex-row" style="color: #fff176; font-size: 1.5rem; font-weight: bold;">
-                    <span id="wind-dir-val">--</span>
-                </div>
+                <div class="flex-row" style="color: #a5d6a7; text-shadow: 0 0 10px rgba(165, 214, 167, 0.3);"><div class="sub-value"><span id="wind-val">--</span><span class="unit">m/s</span></div></div>
+                <div class="flex-row" style="color: #fff176; font-size: 1.5rem; font-weight: bold;"><span id="wind-dir-val">--</span></div>
             </div>
         </div>
     </div>
@@ -200,19 +185,18 @@
     </div>
 </div>
 
-<div class="section-label">宝塚市の天気予報</div>
+<div class="section-label">
+    全国都道府県予報 (10秒巡回)
+    <span id="city-name">Loading...</span>
+</div>
 
-<div class="forecast-container">
+<div class="forecast-container" id="forecast-body">
     <div class="panel" style="height: 160px;">
         <div class="data-group">
             <div class="label">今日の天気</div>
             <div id="today-weather" class="forecast-text">--</div>
             <div style="font-size: 1.1rem; margin-top: 6px; color: #cfd8dc;">
-                最高 <span class="high" id="today-high">--</span> / 
-                最低 <span class="low" id="today-low">--</span> <span class="unit">℃</span>
-            </div>
-            <div style="font-size: 0.9rem; margin-top: 10px; color: #81d4fa; font-weight: bold;">
-                ☔️ 降水確率: 朝 <span id="today-prob-am">--</span>% / 昼 <span id="today-prob-pm">--</span>%
+                最高 <span class="high" id="today-high">--</span> / 最低 <span class="low" id="today-low">--</span> <span class="unit">℃</span>
             </div>
         </div>
     </div>
@@ -221,80 +205,60 @@
             <div class="label">明日の天気</div>
             <div id="tomorrow-weather" class="forecast-text">--</div>
             <div style="font-size: 1.1rem; margin-top: 6px; color: #cfd8dc;">
-                最高 <span class="high" id="tomorrow-high">--</span> / 
-                最低 <span class="low" id="tomorrow-low">--</span> <span class="unit">℃</span>
-            </div>
-            <div style="font-size: 0.9rem; margin-top: 10px; color: #81d4fa; font-weight: bold;">
-                ☔️ 降水確率: 朝 <span id="tomorrow-prob-am">--</span>% / 昼 <span id="tomorrow-prob-pm">--</span>%
+                最高 <span class="high" id="tomorrow-high">--</span> / 最低 <span class="low" id="tomorrow-low">--</span> <span class="unit">℃</span>
             </div>
         </div>
     </div>
 </div>
 
-<div id="update-msg">宝塚市データ同期完了</div>
+<div id="update-msg">Initializing Dashboard...</div>
 
 <script>
     let charts = {};
+    let cityIndex = 0;
+    
+    // 全47都道府県の座標リスト
+    const prefectures = [
+        { name: "北海道(札幌)", lat: 43.06, lon: 141.35 }, { name: "青森", lat: 40.82, lon: 140.74 }, { name: "岩手(盛岡)", lat: 39.70, lon: 141.15 },
+        { name: "宮城(仙台)", lat: 38.27, lon: 140.87 }, { name: "秋田", lat: 39.72, lon: 140.10 }, { name: "山形", lat: 38.26, lon: 140.34 },
+        { name: "福島", lat: 37.75, lon: 140.47 }, { name: "茨城(水戸)", lat: 36.37, lon: 140.45 }, { name: "栃木(宇都宮)", lat: 36.57, lon: 139.88 },
+        { name: "群馬(前橋)", lat: 36.39, lon: 139.06 }, { name: "埼玉", lat: 35.86, lon: 139.65 }, { name: "千葉", lat: 35.61, lon: 140.12 },
+        { name: "東京", lat: 35.69, lon: 139.69 }, { name: "神奈川(横浜)", lat: 35.45, lon: 139.64 }, { name: "新潟", lat: 37.92, lon: 139.05 },
+        { name: "富山", lat: 36.70, lon: 137.21 }, { name: "石川(金沢)", lat: 36.56, lon: 136.66 }, { name: "福井", lat: 36.07, lon: 136.22 },
+        { name: "山梨(甲府)", lat: 35.66, lon: 138.57 }, { name: "長野", lat: 36.65, lon: 138.18 }, { name: "岐阜", lat: 35.42, lon: 136.76 },
+        { name: "静岡", lat: 34.98, lon: 138.38 }, { name: "愛知(名古屋)", lat: 35.18, lon: 136.91 }, { name: "三重(津)", lat: 34.72, lon: 136.51 },
+        { name: "滋賀(大津)", lat: 35.00, lon: 135.87 }, { name: "京都", lat: 35.01, lon: 135.77 }, { name: "大阪", lat: 34.69, lon: 135.50 },
+        { name: "兵庫(神戸)", lat: 34.69, lon: 135.19 }, { name: "奈良", lat: 34.69, lon: 135.83 }, { name: "和歌山", lat: 34.23, lon: 135.17 },
+        { name: "鳥取", lat: 35.50, lon: 134.24 }, { name: "島根(松江)", lat: 35.47, lon: 133.05 }, { name: "岡山", lat: 34.66, lon: 133.93 },
+        { name: "広島", lat: 34.40, lon: 132.46 }, { name: "山口", lat: 34.18, lon: 131.47 }, { name: "徳島", lat: 34.07, lon: 134.56 },
+        { name: "香川(高松)", lat: 34.34, lon: 134.04 }, { name: "愛媛(松山)", lat: 33.84, lon: 132.77 }, { name: "高知", lat: 33.56, lon: 133.53 },
+        { name: "福岡", lat: 33.59, lon: 130.40 }, { name: "佐賀", lat: 33.26, lon: 130.30 }, { name: "長崎", lat: 32.75, lon: 129.88 },
+        { name: "熊本", lat: 32.80, lon: 130.71 }, { name: "大分", lat: 33.24, lon: 131.61 }, { name: "宮崎", lat: 31.91, lon: 131.42 },
+        { name: "鹿児島", lat: 31.56, lon: 130.56 }, { name: "沖縄(那覇)", lat: 26.21, lon: 127.68 }
+    ];
 
     function getWeatherText(code) {
         const weatherMap = {
             0: "☀️ 快晴", 1: "🌤 晴れ", 2: "⛅️ 曇り", 3: "☁️ 曇天",
-            45: "🌫 霧", 48: "🌫 霧氷", 51: "🚿 霧雨", 53: "🚿 霧雨", 55: "🚿 霧雨",
-            61: "☔️ 小雨", 63: "☔️ 雨", 65: "🌊 大雨", 71: "❄️ 小雪", 73: "❄️ 雪", 75: "☃️ 大雪",
-            80: "🌦 にわか雨", 81: "🌦 にわか雨", 82: "⛈ 激しい雨", 95: "⚡️ 雷雨"
+            45: "🌫 霧", 51: "🚿 霧雨", 61: "☔️ 小雨", 63: "☔️ 雨", 71: "❄️ 小雪", 80: "🌦 にわか雨", 95: "⚡️ 雷雨"
         };
-        return weatherMap[code] || "不明";
+        return weatherMap[code] || "☁️ 曇り";
     }
 
     function getWindDirection(degree) {
         const directions = ['北', '北北東', '北東', '東北東', '東', '東南東', '南東', '南南東', '南', '南南西', '南西', '西南北', '西', '西北西', '北西', '北北西'];
-        const index = Math.round(degree / 22.5) % 16;
-        return directions[index];
+        return directions[Math.round(degree / 22.5) % 16];
     }
 
-    function initCharts(tempH, rainH, snowH, windH, pressH) {
-        const commonOptions = {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { x: { display: false }, y: { display: false } }
-        };
-
-        charts.tempChart = new Chart(document.getElementById('tempChart'), {
-            type: 'line',
-            data: { labels: Array(tempH.length).fill(''), datasets: [{ data: tempH, borderColor: '#ffab91', backgroundColor: '#ffab9122', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }] },
-            options: commonOptions
-        });
-
-        charts.rainSnowChart = new Chart(document.getElementById('rainSnowChart'), {
-            type: 'line',
-            data: { labels: Array(rainH.length).fill(''), datasets: [{ data: rainH, borderColor: '#81d4fa', backgroundColor: '#81d4fa33', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }, { data: snowH, borderColor: '#ffffff', backgroundColor: '#ffffff11', fill: true, tension: 0.4, borderWidth: 1, pointRadius: 0, borderDash: [5, 5] }] },
-            options: commonOptions
-        });
-
-        charts.windChart = new Chart(document.getElementById('windChart'), {
-            type: 'line',
-            data: { labels: Array(windH.length).fill(''), datasets: [{ data: windH, borderColor: '#a5d6a7', backgroundColor: '#a5d6a722', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }] },
-            options: commonOptions
-        });
-
-        charts.pressureChart = new Chart(document.getElementById('pressureChart'), {
-            type: 'line',
-            data: { labels: Array(pressH.length).fill(''), datasets: [{ data: pressH, borderColor: '#ce93d8', backgroundColor: '#ce93d822', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }] },
-            options: commonOptions
-        });
-    }
-
-    async function updateData() {
-        const msgEl = document.getElementById('update-msg');
-        const lat = 34.80;
-        const lon = 135.34;
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,precipitation,snowfall,wind_speed_10m,wind_direction_10m,weather_code,surface_pressure&hourly=temperature_2m,precipitation,snowfall,wind_speed_10m,precipitation_probability,surface_pressure&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Asia%2FTokyo`;
-
+    async function updateTakarazuka() {
+        const lat = 34.80, lon = 135.34;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,precipitation,snowfall,wind_speed_10m,wind_direction_10m,weather_code,surface_pressure&hourly=temperature_2m,precipitation,snowfall,wind_speed_10m,surface_pressure&timezone=Asia%2FTokyo`;
+        
         try {
-            const response = await fetch(url);
-            const data = await response.json();
-
+            const res = await fetch(url);
+            const data = await res.json();
             const cur = data.current;
+            
             document.getElementById('temp-val').innerText = cur.temperature_2m.toFixed(1);
             document.getElementById('current-weather').innerText = getWeatherText(cur.weather_code);
             document.getElementById('rain-val').innerText = cur.precipitation.toFixed(1);
@@ -304,51 +268,69 @@
             document.getElementById('pressure-val').innerText = Math.round(cur.surface_pressure);
 
             const now = new Date();
-            document.getElementById('today-date').innerText = now.getFullYear() + "年" + (now.getMonth() + 1) + "月" + now.getDate() + "日";
-            document.getElementById('time-val').innerText = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('today-date').innerText = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
+            document.getElementById('time-val').innerText = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
 
-            const daily = data.daily;
-            document.getElementById('today-weather').innerText = getWeatherText(daily.weather_code[0]);
-            document.getElementById('today-high').innerText = daily.temperature_2m_max[0].toFixed(1);
-            document.getElementById('today-low').innerText = daily.temperature_2m_min[0].toFixed(1);
-            document.getElementById('tomorrow-weather').innerText = getWeatherText(daily.weather_code[1]);
-            document.getElementById('tomorrow-high').innerText = daily.temperature_2m_max[1].toFixed(1);
-            document.getElementById('tomorrow-low').innerText = daily.temperature_2m_min[1].toFixed(1);
+            updateCharts(data.hourly);
+        } catch (e) { console.error(e); }
+    }
 
-            const probH = data.hourly.precipitation_probability;
-            document.getElementById('today-prob-am').innerText = Math.max(...probH.slice(6, 12));
-            document.getElementById('today-prob-pm').innerText = Math.max(...probH.slice(12, 18));
-            document.getElementById('tomorrow-prob-am').innerText = Math.max(...probH.slice(30, 36));
-            document.getElementById('tomorrow-prob-pm').innerText = Math.max(...probH.slice(36, 42));
+    function updateCharts(hourly) {
+        const hL = 24;
+        const temp = hourly.temperature_2m.slice(0, hL);
+        const rain = hourly.precipitation.slice(0, hL);
+        const snow = hourly.snowfall.slice(0, hL);
+        const wind = hourly.wind_speed_10m.slice(0, hL).map(v => v/3.6);
+        const press = hourly.surface_pressure.slice(0, hL);
 
-            const hL = 24;
-            const tempH = data.hourly.temperature_2m.slice(0, hL);
-            const rainH = data.hourly.precipitation.slice(0, hL);
-            const snowH = data.hourly.snowfall.slice(0, hL);
-            const windH = data.hourly.wind_speed_10m.slice(0, hL).map(v => v / 3.6);
-            const pressH = data.hourly.surface_pressure.slice(0, hL);
-
-            if (!charts.tempChart) {
-                initCharts(tempH, rainH, snowH, windH, pressH);
-            } else {
-                charts.tempChart.data.datasets[0].data = tempH;
-                charts.rainSnowChart.data.datasets[0].data = rainH;
-                charts.rainSnowChart.data.datasets[1].data = snowH;
-                charts.windChart.data.datasets[0].data = windH;
-                charts.pressureChart.data.datasets[0].data = pressH;
-                Object.values(charts).forEach(c => c.update());
-            }
-
-            msgEl.innerText = "宝塚市の気象データを更新しました";
-        } catch (e) {
-            msgEl.innerText = "通信エラー";
-            console.error(e);
+        if (!charts.tempChart) {
+            const opt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } };
+            charts.tempChart = new Chart(document.getElementById('tempChart'), { type: 'line', data: { labels: Array(hL).fill(''), datasets: [{ data: temp, borderColor: '#ffab91', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 }] }, options: opt });
+            charts.rainSnowChart = new Chart(document.getElementById('rainSnowChart'), { type: 'line', data: { labels: Array(hL).fill(''), datasets: [{ data: rain, borderColor: '#81d4fa', fill: true, tension: 0.4, pointRadius: 0 }, { data: snow, borderColor: '#fff', borderDash: [5,5], fill: false, pointRadius: 0 }] }, options: opt });
+            charts.windChart = new Chart(document.getElementById('windChart'), { type: 'line', data: { labels: Array(hL).fill(''), datasets: [{ data: wind, borderColor: '#a5d6a7', fill: true, tension: 0.4, pointRadius: 0 }] }, options: opt });
+            charts.pressureChart = new Chart(document.getElementById('pressureChart'), { type: 'line', data: { labels: Array(hL).fill(''), datasets: [{ data: press, borderColor: '#ce93d8', fill: true, tension: 0.4, pointRadius: 0 }] }, options: opt });
+        } else {
+            charts.tempChart.data.datasets[0].data = temp;
+            charts.rainSnowChart.data.datasets[0].data = rain;
+            charts.rainSnowChart.data.datasets[1].data = snow;
+            charts.windChart.data.datasets[0].data = wind;
+            charts.pressureChart.data.datasets[0].data = press;
+            Object.values(charts).forEach(c => c.update());
         }
     }
 
+    async function rotateForecast() {
+        const pref = prefectures[cityIndex];
+        const container = document.getElementById('forecast-body');
+        container.style.opacity = 0;
+
+        setTimeout(async () => {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${pref.lat}&longitude=${pref.lon}&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Asia%2FTokyo`;
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                const daily = data.daily;
+
+                document.getElementById('city-name').innerText = `【 ${pref.name} 】`;
+                document.getElementById('today-weather').innerText = getWeatherText(daily.weather_code[0]);
+                document.getElementById('today-high').innerText = daily.temperature_2m_max[0].toFixed(1);
+                document.getElementById('today-low').innerText = daily.temperature_2m_min[0].toFixed(1);
+                document.getElementById('tomorrow-weather').innerText = getWeatherText(daily.weather_code[1]);
+                document.getElementById('tomorrow-high').innerText = daily.temperature_2m_max[1].toFixed(1);
+                document.getElementById('tomorrow-low').innerText = daily.temperature_2m_min[1].toFixed(1);
+
+                container.style.opacity = 1;
+                cityIndex = (cityIndex + 1) % prefectures.length;
+                document.getElementById('update-msg').innerText = "宝塚観測・47都道府県巡回中";
+            } catch (e) { console.error(e); }
+        }, 500);
+    }
+
     window.onload = () => {
-        updateData();
-        setInterval(updateData, 60000);
+        updateTakarazuka();
+        rotateForecast();
+        setInterval(updateTakarazuka, 60000); 
+        setInterval(rotateForecast, 10000); 
     };
 </script>
 </body>
